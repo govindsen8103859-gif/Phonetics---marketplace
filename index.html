@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b32">
+  <meta name="description" content="Phonetics — find your next pre-owned phone at a price you love.">
+  <title>Phonetics — Good phones. Better prices.</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="config.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="Phonetics home">
+      <span class="brand-mark">P</span>
+      <span class="brand-word">phonetics<span>.</span><small>SMARTER PHONE FINDS</small></span>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    <nav id="mainNav">
+      <a href="#phones">Browse phones</a>
+      <a href="#how">How it works</a>
+      <a href="#trust">Trust & safety</a>
+      <a class="nav-sell" href="#sell">Sell your phone <b>↗</b></a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><i></i> A smarter way to buy pre-owned</div>
+        <h1>Good phones.<br><em>Better prices.</em></h1>
+        <p>Find a phone you’ll love, at a price that feels right. Explore reviewed listings and make your next phone a smarter buy.</p>
+        <div class="hero-actions">
+          <a class="button button-gold" href="#phones">Explore phones <span>→</span></a>
+          <a class="button button-outline" href="#sell">List your phone</a>
+        </div>
+        <div class="hero-assurances"><span>✓ Clear prices</span><span>✓ Reviewed listings</span><span>✓ Privacy-minded</span></div>
+      </div>
+      <div class="hero-art" aria-label="Decorative smartphone illustration">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="device device-back"><div class="camera"><i></i><i></i><i></i></div></div>
+        <div class="device device-front"><div class="earpiece"></div><div class="device-screen"><span class="screen-star">✦</span><b>YOUR NEXT<br>PHONE.</b><small>FOUND.</small></div></div>
+        <div class="float-card float-top"><span class="float-icon">✦</span><span><b>Smart finds</b><small>Made simple</small></span></div>
+        <div class="float-card float-bottom"><span class="float-icon gold-check">✓</span><span><b>Price clarity</b><small>No guesswork</small></span></div>
+      </div>
+    </section>
+
+    <section class="trust-strip" id="trust">
+      <div><span class="strip-icon">◈</span><span><b>Reviewed listings</b><small>Submissions checked before publishing</small></span></div>
+      <div><span class="strip-icon">₹</span><span><b>Clear pricing</b><small>See the public listing price upfront</small></span></div>
+      <div><span class="strip-icon">⌁</span><span><b>Privacy first</b><small>Private details should stay private</small></span></div>
+    </section>
+
+    <section class="section phones-section" id="phones">
+      <div class="section-heading">
+        <div><div class="eyebrow">THE COLLECTION</div><h2>Find your <em>next phone.</em></h2><p>Browse phones approved for public listing.</p></div>
+        <div class="search-wrap"><span>⌕</span><input id="phoneSearch" type="search" placeholder="Search brand or model..." aria-label="Search phones"></div>
+      </div>
+      <div class="filter-row">
+        <button class="filter-chip active" data-brand="all">All phones</button>
+        <button class="filter-chip" data-brand="Apple">Apple</button>
+        <button class="filter-chip" data-brand="Samsung">Samsung</button>
+        <button class="filter-chip" data-brand="Vivo">Vivo</button>
+        <button class="filter-chip" data-brand="Oppo">OPPO</button>
+        <button class="filter-chip" data-brand="Redmi">Redmi</button>
+        <button class="filter-chip" data-brand="Realme">Realme</button>
+      </div>
+      <div id="phoneGrid" class="phone-grid">
+        <div class="loading-card"><span class="loader"></span><p>Loading available phones…</p></div>
+      </div>
+      <p class="fine-print" id="listingNote">Only approved, active listings should appear here.</p>
+    </section>
+
+    <section class="how-section" id="how">
+      <div class="section-heading centered"><div><div class="eyebrow">SIMPLE BY DESIGN</div><h2>Good deals, <em>made simple.</em></h2><p>A clear process for buyers and sellers.</p></div></div>
+      <div class="steps-grid">
+        <article class="step-card"><span class="step-number">01</span><div class="step-icon">⌕</div><h3>Explore</h3><p>Search approved phones and compare their public details and prices.</p></article>
+        <article class="step-card"><span class="step-number">02</span><div class="step-icon">↗</div><h3>Enquire</h3><p>Send an enquiry for a phone you like. Your contact details stay private.</p></article>
+        <article class="step-card"><span class="step-number">03</span><div class="step-icon">✦</div><h3>Sell smarter</h3><p>Submit your phone for review. It appears publicly only after approval.</p></article>
+      </div>
+    </section>
+
+    <section class="sell-section" id="sell">
+      <div class="sell-intro">
+        <div class="eyebrow">READY FOR A NEW OWNER?</div>
+        <h2>Give your phone<br>a <em>fresh start.</em></h2>
+        <p>Share the details, photos and expected price. The Phonetics team can review your submission before a public listing goes live.</p>
+        <div class="privacy-note"><span>▣</span><p><b>Your private details stay private.</b><br>Do not upload Aadhaar, bank details, passwords or other highly sensitive documents.</p></div>
+      </div>
+      <form class="form-card" id="sellerForm">
+        <div class="form-title"><div><span class="eyebrow">SELLER SUBMISSION</span><h3>List your phone</h3></div><span class="form-step">01 / 01</span></div>
+        <div class="form-grid">
+          <label>Full name *<input name="seller_name" required maxlength="100" autocomplete="name" placeholder="Your name"></label>
+          <label>Email address *<input name="seller_email" type="email" required maxlength="254" autocomplete="email" placeholder="you@example.com"></label>
+          <label>Phone / WhatsApp *<input name="seller_phone" type="tel" required maxlength="20" autocomplete="tel" placeholder="Your contact number"></label>
+          <label>Brand *<select name="brand" required><option value="">Choose brand</option><option>Apple</option><option>Samsung</option><option>Vivo</option><option>OPPO</option><option>Redmi</option><option>Realme</option><option>Motorola</option><option>OnePlus</option><option>Other</option></select></label>
+          <label>Phone model *<input name="model" required maxlength="100" placeholder="e.g. Galaxy A54"></label>
+          <label>RAM / Storage<input name="variant" maxlength="60" placeholder="e.g. 8 GB / 128 GB"></label>
+          <label>Condition *<select name="condition" required><option value="">Choose condition</option><option>Like new</option><option>Good</option><option>Fair</option><option>For parts / repair</option></select></label>
+          <label>Expected price (₹) *<input name="asking_price" type="number" required min="1" max="10000000" step="1" placeholder="Your expected price"></label>
+          <label class="full">Phone description *<textarea name="description" required maxlength="1500" rows="3" placeholder="Mention age, accessories, repairs or known issues."></textarea></label>
+          <label class="full">Phone photos *<input name="photos" id="sellerPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple required><small>JPEG, PNG or WebP only. Up to 5 photos, 5 MB each.</small></label>
+          <label class="full">Supporting proof (optional)<input name="proof" id="sellerProof" type="file" accept="image/jpeg,image/png,application/pdf"><small>Do not upload Aadhaar, bank details or passwords. Allowed: image/PDF, up to 5 MB.</small></label>
+        </div>
+        <label class="consent"><input type="checkbox" name="consent" required><span>I confirm these details are accurate and agree to have my submission reviewed.</span></label>
+        <button class="button button-gold submit-button" type="submit">Submit for review <span>→</span></button>
+        <p class="form-message" id="sellerMessage" role="status" aria-live="polite"></p>
+        <p class="form-disclaimer">A submission is not a guarantee of approval or sale. Never pay an unknown person to “unlock” a listing.</p>
+      </form>
+    </section>
+
+    <section class="buyer-section" id="enquire">
+      <div class="buyer-copy"><div class="eyebrow">FOUND THE ONE?</div><h2>Make an <em>enquiry.</em></h2><p>Select a phone from the collection and use its Enquire button, or submit a general question below.</p></div>
+      <form id="buyerForm" class="buyer-form">
+        <label>Your name *<input name="buyer_name" required maxlength="100" placeholder="Your name"></label>
+        <label>Email address *<input name="buyer_email" type="email" required maxlength="254" placeholder="you@example.com"></label>
+        <label>Phone / WhatsApp *<input name="buyer_phone" required type="tel" maxlength="20" placeholder="Your contact number"></label>
+        <label>Phone of interest<input name="phone_interest" id="buyerPhoneInterest" maxlength="200" placeholder="Select a phone or leave a message"></label>
+        <label class="full">Message<textarea name="message" rows="2" maxlength="1000" placeholder="What would you like to know?"></textarea></label>
+        <button class="button button-dark" type="submit">Send enquiry <span>→</span></button>
+        <p class="form-message full" id="buyerMessage" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a class="brand footer-brand" href="#"><span class="brand-mark">P</span><span class="brand-word">phonetics<span>.</span><small>SMARTER PHONE FINDS</small></span></a>
+    <p>Find your next phone. Love the price.</p>
+    <div class="footer-links"><a href="#phones">Browse phones</a><a href="#sell">Sell a phone</a><a href="#trust">Trust & safety</a></div>
+    <small class="copyright">© <span id="year"></span> Phonetics. Buy thoughtfully. Sell confidently.</small>
+  </footer>
+
+  <dialog id="enquiryDialog" class="phone-dialog">
+    <button class="dialog-close" id="closeDialog" aria-label="Close">×</button>
+    <div id="dialogContent"></div>
+  </dialog>
+</body>
+</html>
