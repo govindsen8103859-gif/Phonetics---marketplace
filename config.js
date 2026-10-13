@@ -1,10 +1,21 @@
-window.SUPABASE_URL = "https://vuvznvwlzlabfaasylss.supabase.co";
+(function () {
+  "use strict";
 
-window.SUPABASE_ANON_KEY = "sb_publishable_E885kuUfeqieX5c0l0zgMQ_DBI76YAY";
+  const SUPABASE_URL =
+    "https://vuvznvwlzlabfaasylss.supabase.co";
 
-window.supabaseClient = window.supabase.createClient(
-  window.SUPABASE_URL,
-  window.SUPABASE_ANON_KEY
-);
+  const SUPABASE_KEY =
+    "sb_publishable_E885kuUfeqieX5c0l0zgMQ_DBI76YAY";
 
-console.log("Supabase config loaded:", !!window.supabaseClient);
+  if (!window.supabase) {
+    console.error("Supabase library load nahi hui.");
+    return;
+  }
+
+  window.supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+  console.log("Supabase client ready.");
+})();
