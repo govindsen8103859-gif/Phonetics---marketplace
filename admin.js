@@ -12,24 +12,21 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const inputs = form.querySelectorAll("input");
-    const emailInput = form.querySelector('input[type="email"]') || inputs[0];
-    const passwordInput = form.querySelector('input[type="password"]') || inputs[1];
+    const emailInput = form.querySelector('input[type="email"]');
+    const passwordInput = form.querySelector('input[type="password"]');
 
     if (!emailInput || !passwordInput) {
       alert("Email ya password field nahi mili!");
       return;
     }
 
-    if (typeof supabaseClient === "undefined") {
-      alert("Supabase config load nahi hui!");
+    if (!window.supabaseClient) {
+      alert("Supabase config load nahi hui! Page refresh karo.");
       return;
     }
 
-    alert("Login process shuru ho raha hai!");
-
     const { data, error } =
-      await supabaseClient.auth.signInWithPassword({
+      await window.supabaseClient.auth.signInWithPassword({
         email: emailInput.value.trim(),
         password: passwordInput.value
       });
@@ -40,14 +37,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const { data: admin, error: adminError } =
-      await supabaseClient
+      await window.supabaseClient
         .from("admin_users")
         .select("user_id")
         .eq("user_id", data.user.id)
         .maybeSingle();
 
     if (adminError || !admin) {
-      await supabaseClient.auth.signOut();
+      await window.supabaseClient.auth.signOut();
       alert("Admin permission nahi mili!");
       return;
     }
