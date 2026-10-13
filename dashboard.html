@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phonetics Marketplace | Admin Dashboard</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      color: #172033;
+    }
+
+    .topbar {
+      background: #172554;
+      color: white;
+      padding: 17px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .topbar h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 8px;
+      padding: 12px 15px;
+      font-size: 14px;
+    }
+
+    .logout {
+      background: #ef4444;
+      color: white;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 22px;
+    }
+
+    .welcome {
+      margin-bottom: 22px;
+    }
+
+    .welcome h1 {
+      margin: 0 0 8px;
+      font-size: 27px;
+    }
+
+    .welcome p {
+      color: #64748b;
+      margin: 0;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .card {
+      background: white;
+      padding: 21px;
+      border-radius: 13px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 15px #00000008;
+    }
+
+    .card .label {
+      color: #64748b;
+      font-size: 14px;
+      margin: 0 0 12px;
+    }
+
+    .card h2 {
+      font-size: 28px;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .section {
+      background: white;
+      margin-top: 22px;
+      padding: 22px;
+      border-radius: 13px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .section h2 {
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .action {
+      background: #eff6ff;
+      color: #1d4ed8;
+      text-align: left;
+      font-weight: bold;
+      min-height: 65px;
+    }
+
+    .action:hover {
+      background: #dbeafe;
+    }
+
+    .status {
+      padding: 14px;
+      background: #f8fafc;
+      border-radius: 8px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .muted {
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 750px) {
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .action-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .container {
+        padding: 14px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="topbar">
+    <h2>📱 Phonetics Marketplace</h2>
+    <button class="logout" id="logoutButton">Logout</button>
+  </header>
+
+  <main class="container">
+
+    <div class="welcome">
+      <h1>Admin Dashboard</h1>
+      <p>Welcome to your marketplace control panel.</p>
+    </div>
+
+    <div class="cards">
+
+      <div class="card">
+        <p class="label">Total Products</p>
+        <h2 id="productCount">—</h2>
+      </div>
+
+      <div class="card">
+        <p class="label">Total Orders</p>
+        <h2 id="orderCount">—</h2>
+      </div>
+
+      <div class="card">
+        <p class="label">Total Customers</p>
+        <h2 id="customerCount">—</h2>
+      </div>
+
+      <div class="card">
+        <p class="label">Total Sales</p>
+        <h2 id="salesCount">—</h2>
+      </div>
+
+    </div>
+
+    <section class="section">
+      <h2>Marketplace Management</h2>
+
+      <div class="action-grid">
+        <button class="action" data-page="products">
+          📱 Manage Products
+        </button>
+
+        <button class="action" data-page="orders">
+          🛒 Manage Orders
+        </button>
+
+        <button class="action" data-page="customers">
+          👥 Manage Customers
+        </button>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Admin Account</h2>
+      <div class="status" id="systemStatus">
+        Checking login...
+      </div>
+      <p class="muted">
+        Dashboard data will be connected after the database tables are ready.
+      </p>
+    </section>
+
+    <section class="section" id="detailsSection" hidden>
+      <h2 id="detailsTitle">Details</h2>
+      <p id="detailsText"></p>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async function () {
+      const status = document.getElementById("systemStatus");
+      const logoutButton = document.getElementById("logoutButton");
+
+      function showStatus(message) {
+        status.textContent = message;
+      }
+
+      if (!window.supabaseClient) {
+        showStatus("Supabase connection failed. Please check config.js.");
+        logoutButton.disabled = true;
+        return;
+      }
+
+      try {
+        const { data, error } =
+          await window.supabaseClient.auth.getSession();
+
+        if (error || !data.session) {
+          window.location.replace("./admin.html");
+          return;
+        }
+
+        const user = data.session.user;
+
+        const { data: admin, error: adminError } =
+          await window.supabaseClient
+            .from("admin_users")
+            .select("user_id")
+            .eq("user_id", user.id)
+            .maybeSingle();
+
+        if (adminError || !admin) {
+          await window.supabaseClient.auth.signOut();
+          window.location.replace("./admin.html");
+          return;
+        }
+
+        showStatus("Logged in as Admin: " + user.email);
+
+        logoutButton.addEventListener("click", async function () {
+          logoutButton.disabled = true;
+
+          await window.supabaseClient.auth.signOut();
+
+          window.location.replace("./admin.html");
+        });
+
+        document.querySelectorAll("[data-page]").forEach(function (button) {
+          button.addEventListener("click", function () {
+            const page = button.dataset.page;
+
+            document.getElementById("detailsSection").hidden = false;
+
+            document.getElementById("detailsTitle").textContent =
+              button.textContent.trim();
+
+            document.getElementById("detailsText").textContent =
+              page === "products"
+                ? "Product management will be connected in the next step."
+                : page === "orders"
+                ? "Order management will be connected in the next step."
+                : "Customer management will be connected in the next step.";
+
+            document.getElementById("detailsSection")
+              .scrollIntoView({ behavior: "smooth" });
+          });
+        });
+
+      } catch (error) {
+        showStatus("Error: " + error.message);
+      }
+    });
+  </script>
+
+</body>
+      </html>
