@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Phonetics Marketplace | Admin Dashboard</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -20,7 +21,7 @@
     .topbar {
       background: #172554;
       color: white;
-      padding: 17px 20px;
+      padding: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -28,288 +29,449 @@
       flex-wrap: wrap;
     }
 
-    .topbar h2 {
-      margin: 0;
-      font-size: 20px;
-    }
+    .topbar h2 { margin: 0; font-size: 20px; }
 
-    button {
-      cursor: pointer;
-      border: 0;
-      border-radius: 8px;
-      padding: 12px 15px;
+    button, input, select {
+      padding: 11px;
+      border-radius: 7px;
+      border: 1px solid #cbd5e1;
       font-size: 14px;
     }
 
-    .logout {
-      background: #ef4444;
-      color: white;
-    }
+    button { cursor: pointer; }
+
+    .logout { background: #ef4444; color: white; border: 0; }
 
     .container {
       max-width: 1200px;
       margin: auto;
-      padding: 22px;
-    }
-
-    .welcome {
-      margin-bottom: 22px;
-    }
-
-    .welcome h1 {
-      margin: 0 0 8px;
-      font-size: 27px;
-    }
-
-    .welcome p {
-      color: #64748b;
-      margin: 0;
+      padding: 18px;
     }
 
     .cards {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 15px;
-    }
-
-    .card {
-      background: white;
-      padding: 21px;
-      border-radius: 13px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 15px #00000008;
-    }
-
-    .card .label {
-      color: #64748b;
-      font-size: 14px;
-      margin: 0 0 12px;
-    }
-
-    .card h2 {
-      font-size: 28px;
-      margin: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .section {
-      background: white;
-      margin-top: 22px;
-      padding: 22px;
-      border-radius: 13px;
-      border: 1px solid #e2e8f0;
-    }
-
-    .section h2 {
-      margin-top: 0;
-      font-size: 20px;
-    }
-
-    .action-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
     }
 
-    .action {
-      background: #eff6ff;
-      color: #1d4ed8;
-      text-align: left;
-      font-weight: bold;
-      min-height: 65px;
+    .card, .section {
+      background: white;
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 18px;
     }
 
-    .action:hover {
-      background: #dbeafe;
+    .label { color: #64748b; font-size: 14px; }
+
+    .card h2 { margin-bottom: 0; overflow-wrap: anywhere; }
+
+    .section h2 { margin-top: 0; }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
     }
+
+    .toolbar input { flex: 1; min-width: 150px; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 750px;
+    }
+
+    th, td {
+      padding: 11px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    th { background: #f8fafc; }
+
+    .btn {
+      background: #1d4ed8;
+      color: white;
+      border: 0;
+      margin: 2px;
+    }
+
+    .green { background: #15803d; }
+    .red { background: #b91c1c; }
+    .gray { background: #475569; }
 
     .status {
-      padding: 14px;
+      padding: 12px;
       background: #f8fafc;
       border-radius: 8px;
-      line-height: 1.6;
       overflow-wrap: anywhere;
-    }
-
-    .muted {
-      color: #64748b;
-      font-size: 13px;
       line-height: 1.5;
+      margin-bottom: 15px;
     }
 
-    @media (max-width: 750px) {
-      .cards {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
+    .muted { color: #64748b; font-size: 13px; }
 
-      .action-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .container {
-        padding: 14px;
-      }
-    }
-
-    @media (max-width: 360px) {
-      .cards {
-        grid-template-columns: 1fr;
-      }
+    @media (max-width: 600px) {
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .container { padding: 12px; }
     }
   </style>
 </head>
 
 <body>
 
-  <header class="topbar">
-    <h2>📱 Phonetics Marketplace</h2>
-    <button class="logout" id="logoutButton">Logout</button>
-  </header>
+<header class="topbar">
+  <h2>📱 Phonetics Marketplace</h2>
+  <button class="logout" id="logoutButton">Logout</button>
+</header>
 
-  <main class="container">
+<main class="container">
 
-    <div class="welcome">
-      <h1>Admin Dashboard</h1>
-      <p>Welcome to your marketplace control panel.</p>
+  <h1>Admin Dashboard</h1>
+
+  <div id="systemStatus" class="status">
+    Checking admin login...
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <p class="label">Total Products</p>
+      <h2 id="productCount">—</h2>
     </div>
 
-    <div class="cards">
-
-      <div class="card">
-        <p class="label">Total Products</p>
-        <h2 id="productCount">—</h2>
-      </div>
-
-      <div class="card">
-        <p class="label">Total Orders</p>
-        <h2 id="orderCount">—</h2>
-      </div>
-
-      <div class="card">
-        <p class="label">Total Customers</p>
-        <h2 id="customerCount">—</h2>
-      </div>
-
-      <div class="card">
-        <p class="label">Total Sales</p>
-        <h2 id="salesCount">—</h2>
-      </div>
-
+    <div class="card">
+      <p class="label">Seller Submissions</p>
+      <h2 id="sellerCount">—</h2>
     </div>
 
-    <section class="section">
-      <h2>Marketplace Management</h2>
+    <div class="card">
+      <p class="label">Buyer Requests</p>
+      <h2 id="buyerCount">—</h2>
+    </div>
+  </div>
 
-      <div class="action-grid">
-        <button class="action" data-page="products">
-          📱 Manage Products
-        </button>
+  <section class="section">
+    <h2>📱 Product Management</h2>
 
-        <button class="action" data-page="orders">
-          🛒 Manage Orders
-        </button>
+    <div class="toolbar">
+      <input id="searchInput"
+             type="search"
+             placeholder="Search brand, model or status...">
 
-        <button class="action" data-page="customers">
-          👥 Manage Customers
-        </button>
-      </div>
-    </section>
+      <button class="btn" id="refreshButton">Refresh</button>
+    </div>
 
-    <section class="section">
-      <h2>Admin Account</h2>
-      <div class="status" id="systemStatus">
-        Checking login...
-      </div>
-      <p class="muted">
-        Dashboard data will be connected after the database tables are ready.
-      </p>
-    </section>
+    <p class="muted">
+      Admin adjustment is added to the seller's listed price.
+      The original selling_price is not changed by the adjustment feature.
+    </p>
 
-    <section class="section" id="detailsSection" hidden>
-      <h2 id="detailsTitle">Details</h2>
-      <p id="detailsText"></p>
-    </section>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Phone</th>
+            <th>Storage</th>
+            <th>Condition</th>
+            <th>Seller Price</th>
+            <th>Admin Extra</th>
+            <th>Customer Price</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="productRows">
+          <tr><td colspan="8">Loading products...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-  </main>
+  <section class="section">
+    <h2>💰 Price Adjustment Rules</h2>
+    <p>
+      Example: Seller price ₹5,000 + Admin adjustment ₹500
+      = Customer price ₹5,500.
+    </p>
+    <p class="muted">
+      Saving an adjustment updates only admin_price_adjustment.
+      Your public listing page must also calculate and display
+      selling_price + admin_price_adjustment for customers.
+    </p>
+  </section>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js"></script>
+</main>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", async function () {
-      const status = document.getElementById("systemStatus");
-      const logoutButton = document.getElementById("logoutButton");
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const client = window.supabaseClient;
+  const statusBox = document.getElementById("systemStatus");
+  const rows = document.getElementById("productRows");
+  const searchInput = document.getElementById("searchInput");
 
-      function showStatus(message) {
-        status.textContent = message;
+  let products = [];
+
+  function message(text) {
+    statusBox.textContent = text;
+  }
+
+  function money(value) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return "—";
+
+    return "₹" + amount.toLocaleString("en-IN", {
+      maximumFractionDigits: 2
+    });
+  }
+
+  function safeText(value) {
+    return String(value ?? "");
+  }
+
+  if (!client) {
+    message("Supabase connection failed. Check config.js.");
+    return;
+  }
+
+  try {
+    const { data: sessionData, error: sessionError } =
+      await client.auth.getSession();
+
+    if (sessionError || !sessionData.session) {
+      window.location.replace("./admin.html");
+      return;
+    }
+
+    const user = sessionData.session.user;
+
+    const { data: admin, error: adminError } = await client
+      .from("admin_users")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (adminError || !admin) {
+      await client.auth.signOut();
+      window.location.replace("./admin.html");
+      return;
+    }
+
+    message("Logged in as Admin: " + user.email);
+
+    async function loadCount(table, elementId) {
+      const { count, error } = await client
+        .from(table)
+        .select("*", { count: "exact", head: true });
+
+      const element = document.getElementById(elementId);
+
+      if (error) {
+        element.textContent = "Unavailable";
+        console.error(table + " count error:", error.message);
+      } else {
+        element.textContent = count ?? 0;
       }
+    }
 
-      if (!window.supabaseClient) {
-        showStatus("Supabase connection failed. Please check config.js.");
-        logoutButton.disabled = true;
+    async function loadProducts() {
+      rows.innerHTML =
+        '<tr><td colspan="8">Loading products...</td></tr>';
+
+      const { data, error } = await client
+        .from("phone_listings")
+        .select(
+          "id, brand, model, storage, phone_condition, selling_price, admin_price_adjustment, status, created_at"
+        )
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        rows.innerHTML =
+          '<tr><td colspan="8">Could not load products: ' +
+          safeText(error.message) +
+          '</td></tr>';
+
+        message(
+          "Products could not be loaded. Check phone_listings permissions/RLS."
+        );
         return;
       }
 
-      try {
-        const { data, error } =
-          await window.supabaseClient.auth.getSession();
+      products = data || [];
 
-        if (error || !data.session) {
-          window.location.replace("./admin.html");
-          return;
-        }
+      document.getElementById("productCount").textContent =
+        products.length;
 
-        const user = data.session.user;
+      renderProducts();
+    }
 
-        const { data: admin, error: adminError } =
-          await window.supabaseClient
-            .from("admin_users")
-            .select("user_id")
-            .eq("user_id", user.id)
-            .maybeSingle();
+    function renderProducts() {
+      const term = searchInput.value.trim().toLowerCase();
 
-        if (adminError || !admin) {
-          await window.supabaseClient.auth.signOut();
-          window.location.replace("./admin.html");
-          return;
-        }
+      const filtered = products.filter(product => {
+        const text = [
+          product.brand,
+          product.model,
+          product.status
+        ].join(" ").toLowerCase();
 
-        showStatus("Logged in as Admin: " + user.email);
+        return text.includes(term);
+      });
 
-        logoutButton.addEventListener("click", async function () {
-          logoutButton.disabled = true;
-
-          await window.supabaseClient.auth.signOut();
-
-          window.location.replace("./admin.html");
-        });
-
-        document.querySelectorAll("[data-page]").forEach(function (button) {
-          button.addEventListener("click", function () {
-            const page = button.dataset.page;
-
-            document.getElementById("detailsSection").hidden = false;
-
-            document.getElementById("detailsTitle").textContent =
-              button.textContent.trim();
-
-            document.getElementById("detailsText").textContent =
-              page === "products"
-                ? "Product management will be connected in the next step."
-                : page === "orders"
-                ? "Order management will be connected in the next step."
-                : "Customer management will be connected in the next step.";
-
-            document.getElementById("detailsSection")
-              .scrollIntoView({ behavior: "smooth" });
-          });
-        });
-
-      } catch (error) {
-        showStatus("Error: " + error.message);
+      if (!filtered.length) {
+        rows.innerHTML =
+          '<tr><td colspan="8">No products found.</td></tr>';
+        return;
       }
-    });
-  </script>
+
+      rows.innerHTML = "";
+
+      filtered.forEach(product => {
+        const sellerPrice = Number(product.selling_price || 0);
+        const extra = Number(product.admin_price_adjustment || 0);
+        const finalPrice = sellerPrice + extra;
+
+        const tr = document.createElement("tr");
+
+        function addCell(value) {
+          const td = document.createElement("td");
+          td.textContent = safeText(value);
+          tr.appendChild(td);
+        }
+
+        addCell(
+          safeText(product.brand) + " " + safeText(product.model)
+        );
+        addCell(product.storage);
+        addCell(product.phone_condition);
+        addCell(money(sellerPrice));
+        addCell(money(extra));
+        addCell(money(finalPrice));
+        addCell(product.status || "Not set");
+
+        const actionCell = document.createElement("td");
+
+        const priceButton = document.createElement("button");
+        priceButton.className = "btn";
+        priceButton.textContent = "Set Extra";
+        priceButton.addEventListener("click", () => {
+          changeAdjustment(product);
+        });
+
+        const statusButton = document.createElement("button");
+        statusButton.className = "btn gray";
+        statusButton.textContent = "Change Status";
+        statusButton.addEventListener("click", () => {
+          changeStatus(product);
+        });
+
+        actionCell.append(priceButton, statusButton);
+        tr.appendChild(actionCell);
+        rows.appendChild(tr);
+      });
+    }
+
+    async function changeAdjustment(product) {
+      const current = Number(product.admin_price_adjustment || 0);
+
+      const answer = prompt(
+        "Enter additional amount in rupees.\n" +
+        "Seller price: " + money(product.selling_price) + "\n" +
+        "Current extra: " + money(current) + "\n" +
+        "Enter 0 to remove the extra amount.",
+        String(current)
+      );
+
+      if (answer === null) return;
+
+      const extra = Number(answer);
+
+      if (!Number.isFinite(extra) || extra < 0) {
+        alert("Enter a valid amount greater than or equal to 0.");
+        return;
+      }
+
+      const { error } = await client
+        .from("phone_listings")
+        .update({ admin_price_adjustment: extra })
+        .eq("id", product.id);
+
+      if (error) {
+        alert("Price update failed: " + error.message);
+        return;
+      }
+
+      alert(
+        "Adjustment saved.\nCustomer price: " +
+        money(Number(product.selling_price || 0) + extra)
+      );
+
+      await loadProducts();
+    }
+
+    async function changeStatus(product) {
+      const current = safeText(product.status || "");
+
+      const answer = prompt(
+        "Enter the new status exactly as supported by your database.\n" +
+        "For example: pending, approved, published, rejected, hidden.\n" +
+        "Current status: " + current,
+        current
+      );
+
+      if (answer === null) return;
+
+      const newStatus = answer.trim();
+
+      if (!newStatus) {
+        alert("Status cannot be empty.");
+        return;
+      }
+
+      const { error } = await client
+        .from("phone_listings")
+        .update({ status: newStatus })
+        .eq("id", product.id);
+
+      if (error) {
+        alert("Status update failed: " + error.message);
+        return;
+      }
+
+      alert("Status updated to: " + newStatus);
+      await loadProducts();
+    }
+
+    document.getElementById("refreshButton")
+      .addEventListener("click", async () => {
+        await loadProducts();
+        await loadCount("seller_submissions", "sellerCount");
+        await loadCount("buyer_requests", "buyerCount");
+      });
+
+    searchInput.addEventListener("input", renderProducts);
+
+    document.getElementById("logoutButton")
+      .addEventListener("click", async event => {
+        event.currentTarget.disabled = true;
+        await client.auth.signOut();
+        window.location.replace("./admin.html");
+      });
+
+    await loadProducts();
+    await loadCount("seller_submissions", "sellerCount");
+    await loadCount("buyer_requests", "buyerCount");
+
+  } catch (error) {
+    message("Dashboard error: " + error.message);
+    console.error(error);
+  }
+});
+</script>
 
 </body>
 </html>
