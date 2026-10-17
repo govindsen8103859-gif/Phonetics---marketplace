@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phonetics | Manage Listings</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f1f5f9;margin:0;padding:16px;color:#172554}
+main{max-width:700px;margin:auto}
+.card{background:white;padding:18px;border-radius:12px;margin-bottom:16px}
+input,textarea,select,button{box-sizing:border-box;width:100%;padding:12px;margin:7px 0;border:1px solid #cbd5e1;border-radius:7px;font-size:16px}
+button{background:#172554;color:white;border:0;font-weight:bold}
+.item{border:1px solid #ddd;padding:12px;margin:12px 0;border-radius:8px;overflow-wrap:anywhere}
+.price{font-weight:bold;color:#047857}
+</style>
+</head>
+<body>
+<main>
+  <h2>📱 Phonetics — Manage Listings</h2>
+  <p><a href="./dashboard.html">← Admin Dashboard</a></p>
+
+  <section class="card">
+    <h3>नया मोबाइल जोड़ें</h3>
+    <form id="form">
+      <input name="brand" placeholder="Brand" required>
+      <input name="model" placeholder="Model" required>
+      <input name="storage" placeholder="Storage, जैसे 128GB" required>
+
+      <select name="phone_condition" required>
+        <option value="">Condition चुनें</option>
+        <option>Like New</option>
+        <option>Excellent</option>
+        <option>Good</option>
+        <option>Fair</option>
+      </select>
+
+      <input name="selling_price" type="number" min="1"
+             placeholder="Seller/Base Price ₹" required>
+
+      <input name="admin_price_adjustment" type="number"
+             min="0" step="0.01" value="0"
+             placeholder="Extra Admin Price ₹" required>
+
+      <input name="city" placeholder="City" required>
+      <textarea name="description" placeholder="Description"></textarea>
+      <textarea name="photo_urls"
+                placeholder="Photo URLs — हर URL नई लाइन में"></textarea>
+
+      <select name="status">
+        <option value="pending">Pending — छिपा रहेगा</option>
+        <option value="published">Published</option>
+        <option value="hidden">Hidden</option>
+      </select>
+
+      <button id="save" type="submit">मोबाइल सेव करें</button>
+    </form>
+    <p id="message" role="status"></p>
+  </section>
+
+  <section class="card">
+    <h3>मोबाइल Listings</h3>
+    <button id="refresh" type="button">सूची Refresh करें</button>
+    <div id="list">लोड हो रहा है...</div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script>
+const form = document.getElementById("form");
+const message = document.getElementById("message");
+const list = document.getElementById("list");
+const save = document.getElementById("save");
+
+let db;
+let ready = false;
+
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;",
+    '"':"&quot;", "'":"&#39;"
+  }[c]));
+}
+
+async function start() {
+  db = window.supabaseClient;
+
+  if (!db) {
+    message.textContent = "Supabase config.js लोड नहीं हुई।";
+    form.hidden = true;
+    list.textContent = "Supabase उपलब्ध नहीं है।";
+    return;
+  }
+
+  const {data, error} = await db.auth.getSession();
+  const user = data?.session?.user;
+
+  if (error || !user) {
+    message.textContent = "पहले Admin Login करें।";
+    form.hidden = true;
+    list.textContent = "Admin login आवश्यक है।";
+    return;
+  }
+
+  const {data: admin, error: adminError} = await db
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (adminError || !admin) {
+    message.textContent = "Admin access नहीं मिला।";
+    form.hidden = true;
+    list.textContent = "केवल अधिकृत Admin ही listings देख सकता है।";
+    return;
+  }
+
+  ready = true;
+  message.textContent = "Admin सत्यापित है।";
+  await loadListings();
+}
+
+async function loadListings() {
+  if (!ready) return;
+
+  list.textContent = "Listings लोड हो रही हैं...";
+
+  const {data, error} = await db
+    .from("admin_listings")
+    .select("*")
+    .order("created_at", {ascending:false});
+
+  if (error) {
+    list.textContent = "Listings लोड नहीं हुईं: " + error.message;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    list.textContent = "अभी कोई listing नहीं है। ऊपर से नया मोबाइल जोड़ें।";
+    return;
+  }
+
+  list.innerHTML = data.map(p => {
+    const sellerPrice = Number(p.selling_price || 0);
+    const extra = Number(p.admin_price_adjustment || 0);
+    const finalPrice = sellerPrice + extra;
+
+    return `
+      <article class="item">
+        <h3>${esc(p.brand)} ${esc(p.model)}</h3>
+        <p>${esc(p.storage)} · ${esc(p.phone_condition)}</p>
+        <p>Seller Price: ₹${sellerPrice.toLocaleString("en-IN")}</p>
+        <p>Extra Admin Price: ₹${extra.toLocaleString("en-IN")}</p>
+        <p class="price">Customer Price: ₹${finalPrice.toLocaleString("en-IN")}</p>
+        <p>City: ${esc(p.city)}</p>
+        <p>Status: <strong>${esc(p.status)}</strong></p>
+
+        <label>Extra Admin Price बदलें</label>
+        <input type="number" min="0" step="0.01"
+               id="price-${esc(p.id)}"
+               value="${extra}">
+
+        <label>Listing Status</label>
+        <select id="status-${esc(p.id)}">
+          <option value="pending" ${p.status==="pending"?"selected":""}>Pending</option>
+          <option value="published" ${p.status==="published"?"selected":""}>Published</option>
+          <option value="hidden" ${p.status==="hidden"?"selected":""}>Hidden</option>
+        </select>
+
+        <button type="button"
+                onclick="updateListing('${esc(p.id)}')">
+          बदलाव सेव करें
+        </button>
+      </article>`;
+  }).join("");
+}
+
+async function updateListing(id) {
+  if (!ready) return;
+
+  const priceInput = document.getElementById("price-" + id);
+  const statusInput = document.getElementById("status-" + id);
+  const extra = Number(priceInput.value);
+
+  if (!Number.isFinite(extra) || extra < 0) {
+    alert("Extra Admin Price शून्य या उससे अधिक रखें।");
+    return;
+  }
+
+  const {error} = await db
+    .from("admin_listings")
+    .update({
+      admin_price_adjustment: extra,
+      status: statusInput.value,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", id);
+
+  if (error) {
+    alert("बदलाव सेव नहीं हुए: " + error.message);
+    return;
+  }
+
+  alert("बदलाव सेव हो गए।");
+  await loadListings();
+}
+
+form.addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!ready) return;
+
+  save.disabled = true;
+  message.textContent = "सेव हो रहा है...";
+
+  try {
+    const f = new FormData(form);
+    const sellerPrice = Number(f.get("selling_price"));
+    const extra = Number(f.get("admin_price_adjustment"));
+
+    if (!Number.isSafeInteger(sellerPrice) || sellerPrice <= 0) {
+      throw new Error("Seller Price सही भरें।");
+    }
+
+    if (!Number.isFinite(extra) || extra < 0) {
+      throw new Error("Extra Admin Price सही भरें।");
+    }
+
+    const photos = String(f.get("photo_urls") || "")
+      .split(/\n/)
+      .map(x => x.trim())
+      .filter(Boolean);
+
+    const listing = {
+      brand: String(f.get("brand")).trim(),
+      model: String(f.get("model")).trim(),
+      storage: String(f.get("storage")).trim(),
+      phone_condition: String(f.get("phone_condition")),
+      selling_price: sellerPrice,
+      admin_price_adjustment: extra,
+      city: String(f.get("city")).trim(),
+      description: String(f.get("description") || "").trim(),
+      photo_urls: photos,
+      status: String(f.get("status"))
+    };
+
+    const {error} = await db
+      .from("admin_listings")
+      .insert(listing);
+
+    if (error) throw error;
+
+    message.textContent = "मोबाइल सेव हो गया।";
+    form.reset();
+    form.elements.admin_price_adjustment.value = "0";
+    form.elements.status.value = "pending";
+
+    await loadListings();
+  } catch (e) {
+    message.textContent = "सेव नहीं हुआ: " + e.message;
+  } finally {
+    save.disabled = false;
+  }
+});
+
+document.getElementById("refresh").addEventListener("click", loadListings);
+
+start().catch(e => {
+  message.textContent = "पेज शुरू नहीं हुआ: " + e.message;
+});
+</script>
+</body>
+</html>
